@@ -1,5 +1,8 @@
 use crate::fragment::TextFragment;
 
-pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, FragmentError> {
+pub fn build_url<FragmentError>(
+    base: &str,
+    fragment: &TextFragment,
+) -> Result<String, FragmentError> {
     todo!()
 }
