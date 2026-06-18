@@ -1,8 +1,6 @@
-mod config {
-    fn take_user_input() {}
-    fn validate_input() {}
-    fn handle_percent_encoding() {}
-}
+pub mod encode;
+pub mod fragment;
+pub mod url;
 
 #[cfg(test)]
 mod tests {
@@ -14,5 +12,3 @@ mod tests {
     //     assert_eq!(result, 4);
     // }
 }
-
-struct Config {}
