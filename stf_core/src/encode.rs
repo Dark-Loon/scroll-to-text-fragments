@@ -1,3 +1,5 @@
+use urlencoding::encode;
+
 #[cfg(test)]
 mod tests {
 
@@ -25,9 +27,11 @@ mod tests {
         assert_eq!("%3D", encode_special_characters("="));
         assert_eq!("%25", encode_special_characters("%"));
         assert_eq!("%20", encode_special_characters(" "));
+        assert_eq!("hello%20world", encode_special_characters("hello world"));
+        assert_eq!("a%2Cb", encode_special_characters("a,b"));
     }
 }
 
-pub fn encode_special_characters(char: &str) -> &str {
-    todo!()
+pub fn encode_special_characters(input: &str) -> String {
+    encode(input).into_owned()
 }
