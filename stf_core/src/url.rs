@@ -8,11 +8,13 @@ pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, Fragment
         return Err(FragmentError::EmptyTextStart);
     }
 
-    let base = Url::parse(base)?;
+    let base = Url::parse(base).map_err(|e| FragmentError::InvalidBaseUrl(e.to_string()))?;
 
     let directive = fragment.to_directive();
 
-    let combined = base.join(&directive)?;
+    let combined = base
+        .join(&directive)
+        .map_err(|e| FragmentError::InvalidBaseUrl(e.to_string()))?;
     let result = combined.to_string();
 
     Ok(combined.to_string())
@@ -21,7 +23,7 @@ pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, Fragment
 #[derive(Debug, Error, PartialEq)]
 pub enum FragmentError {
     #[error("invalid base URL: {0}")]
-    InvalidBaseUrl(#[from] url::ParseError),
+    InvalidBaseUrl(String),
 
     #[error("text_start must not be empty")]
     EmptyTextStart,
@@ -31,22 +33,37 @@ pub enum FragmentError {
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn rejects_empty_text_start() {
-    //     let fragment = TextFragment::new(String::new(), None, None, None);
+    #[test]
+    fn rejects_empty_text_start() {
+        let fragment = TextFragment::new(String::new(), None, None, None);
 
-    //     assert_eq!(
-    //         build_url("https://example.com", &fragment),
-    //         Err(FragmentError::EmptyTextStart)
-    //     );
-    // }
+        assert_eq!(
+            build_url("https://example.com", &fragment),
+            Err(FragmentError::EmptyTextStart)
+        );
+    }
 
-    // #[test]
-    // fn rejects_invalid_base_url() {
-    //     let fragment = TextFragment::new(String::from("human"), None, None, None);
+    #[test]
+    fn rejects_whitespace_only_text_start() {
+        let fragment = TextFragment::new(String::from("    "), None, None, None);
 
-    //     assert!(build_url("not a url", &fragment).is_err());
-    // }
+        assert_eq!(
+            build_url("https://example.com", &fragment),
+            Err(FragmentError::EmptyTextStart)
+        );
+    }
+
+    #[test]
+    fn rejects_invalid_base_url() {
+        let fragment = TextFragment::new(String::from("human"), None, None, None);
+
+        assert_eq!(
+            build_url("not a url", &fragment),
+            Err(FragmentError::InvalidBaseUrl(
+                "relative URL without a base".into()
+            ))
+        );
+    }
 
     #[test]
     fn should_return_full_url() {
@@ -116,6 +133,23 @@ mod tests {
             ),
             Ok(String::from(
                 "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a#:~:text=downgrade%3A-,The%20Referer,be%20sent,-to%20origins"
+            ))
+        );
+
+        fragment = TextFragment::new(
+            String::from("The Referer"),
+            Some(String::from("be sent")),
+            Some(String::from("downgrade:")),
+            Some(String::from("to origins")),
+        );
+
+        assert_eq!(
+            build_url(
+                "https://example.com/path/to/page?name=ferret&color=purple",
+                &fragment
+            ),
+            Ok(String::from(
+                "https://example.com/path/to/page?name=ferret&color=purple#:~:text=downgrade%3A-,The%20Referer,be%20sent,-to%20origins"
             ))
         );
     }
