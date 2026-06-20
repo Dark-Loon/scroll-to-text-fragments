@@ -45,6 +45,7 @@ fn run(mode: Mode) -> Result<String, RunError> {
     match mode {
         Mode::Interactive => {
             let (base, text, prefix, suffix) = prompt_for_fragment()?;
+            build_fragment_url(&base, text, prefix, suffix)
         }
 
         Mode::FromStdin {
@@ -52,11 +53,7 @@ fn run(mode: Mode) -> Result<String, RunError> {
             text,
             prefix,
             suffix,
-        } => {
-            let fragment = TextFragment::new(text, None, prefix, suffix);
-            let url = build_url(&base, &fragment)?;
-            Ok(url)
-        }
+        } => build_fragment_url(&base, text, prefix, suffix),
 
         Mode::Direct {
             base,
@@ -70,11 +67,20 @@ fn run(mode: Mode) -> Result<String, RunError> {
                     "note: text argument and piped stdin both provided -- using the argument, stdin ignored"
                 );
             }
-            let fragment = TextFragment::new(text, None, prefix, suffix);
-            let url = build_url(&base, &fragment)?;
-            Ok(url)
+            build_fragment_url(&base, text, prefix, suffix)
         }
     }
+}
+
+fn build_fragment_url(
+    base: &str,
+    text: String,
+    prefix: Option<String>,
+    suffix: Option<String>,
+) -> Result<String, RunError> {
+    let fragment = TextFragment::new(text, None, prefix, suffix);
+    let url = build_url(base, &fragment)?;
+    Ok(url)
 }
 
 fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<String>), InquireError> {
@@ -182,9 +188,6 @@ enum RunError {
 
     #[error(transparent)]
     Prompt(#[from] InquireError),
-
-    #[error("interactive mode isn't implemented yet -- try passing a URL and text directly")]
-    InteractiveNotYetImplemented,
 }
 
 fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError> {
