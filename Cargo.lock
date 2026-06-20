@@ -587,6 +587,7 @@ dependencies = [
  "inquire",
  "stf_core",
  "thiserror",
+ "url",
 ]
 
 [[package]]

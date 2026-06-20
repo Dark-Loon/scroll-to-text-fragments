@@ -5,7 +5,7 @@ use std::{
 
 use clap::Parser;
 
-use inquire::{InquireError, Text, required};
+use inquire::{Confirm, InquireError, Text, required};
 use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
 
@@ -94,19 +94,30 @@ fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<Strin
         .with_help_message("Paste the exact passage you want highlighted")
         .prompt()?;
 
-    let prefix = Text::new("Prefix (optional)")
-        .with_help_message(
-            "Text immediately before the match, to disambiguate repeated occurrences -- press Enter to skip",
-        )
-        .prompt_skippable()?
-        .filter(|s| !s.trim().is_empty());
+    let wants_disambiguation = Confirm::new("Disambiguate repeated matches with a prefix/suffix?")
+        .with_default(false)
+        .with_help_message("Most pages won't need this -- only useful if your text appears more than once on the page")
+        .prompt()?;
 
-    let suffix = Text::new("Suffix (optional)")
-        .with_help_message(
-            "Text immediately after the match, to disambiguate repeated occurrences -- press Enter to skip",
-        )
-        .prompt_skippable()?
-        .filter(|s| !s.trim().is_empty());
+    let (prefix, suffix) = if wants_disambiguation {
+        let prefix = Text::new("Prefix (optional)")
+            .with_help_message(
+                "Text immediately before the match, to disambiguate repeated occurrences -- press Enter to skip",
+            )
+            .prompt_skippable()?
+            .filter(|s| !s.trim().is_empty());
+
+        let suffix = Text::new("Suffix (optional)")
+            .with_help_message(
+                "Text immediately after the match, to disambiguate repeated occurrences -- press Enter to skip",
+            )
+            .prompt_skippable()?
+            .filter(|s| !s.trim().is_empty());
+
+        (prefix, suffix)
+    } else {
+        (None, None)
+    };
 
     Ok((base, text, prefix, suffix))
 }
