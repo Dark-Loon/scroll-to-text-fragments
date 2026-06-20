@@ -64,10 +64,20 @@ fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError
 }
 
 #[cfg(test)]
-mod tests {
+mod resolve_mode_tests {
     // use clap::CommandFactory;
 
     use super::*;
+
+    fn cli(base: Option<&str>, text: Option<&str>) -> Cli {
+        Cli {
+            base: base.map(String::from),
+            text: text.map(String::from),
+            prefix: None,
+            suffix: None,
+            verbose: false,
+        }
+    }
 
     // #[test]
     // fn verify_cli() {
