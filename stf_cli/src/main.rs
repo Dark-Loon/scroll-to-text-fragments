@@ -26,10 +26,14 @@ enum Mode {
     FromStdin {
         base: String,
         text: String,
+        prefix: Option<String>,
+        suffix: Option<String>,
     },
     Direct {
         base: String,
         text: String,
+        prefix: Option<String>,
+        suffix: Option<String>,
         stdin_ignored: bool,
     },
 }
@@ -41,20 +45,30 @@ enum ModeError {
 }
 
 fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError> {
+    if cli.base.is_none() && (cli.prefix.is_some() || cli.suffix.is_some()) {
+        return Err(ModeError::MissingBase);
+    }
+
     match (&cli.base, &cli.text, stdin_text) {
         (None, None, None) => Ok(Mode::Interactive),
         (Some(b), None, Some(t)) => Ok(Mode::FromStdin {
             base: b.clone(),
-            text: t,
+            text: t.clone(),
+            prefix: cli.prefix.clone(),
+            suffix: cli.suffix.clone(),
         }),
         (Some(b), Some(t), None) => Ok(Mode::Direct {
             base: b.clone(),
             text: t.clone(),
+            prefix: cli.prefix.clone(),
+            suffix: cli.suffix.clone(),
             stdin_ignored: false,
         }),
         (Some(b), Some(t), Some(_)) => Ok(Mode::Direct {
             base: b.clone(),
             text: t.clone(),
+            prefix: cli.prefix.clone(),
+            suffix: cli.suffix.clone(),
             stdin_ignored: true,
         }),
         (Some(_), None, None) => Err(ModeError::MissingText),
@@ -67,12 +81,17 @@ fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError
 mod resolve_mode_tests {
     use super::*;
 
-    fn cli(base: Option<&str>, text: Option<&str>) -> Cli {
+    fn cli(
+        base: Option<&str>,
+        text: Option<&str>,
+        prefix: Option<&str>,
+        suffix: Option<&str>,
+    ) -> Cli {
         Cli {
             base: base.map(String::from),
             text: text.map(String::from),
-            prefix: None,
-            suffix: None,
+            prefix: prefix.map(String::from),
+            suffix: suffix.map(String::from),
             verbose: false,
         }
     }
@@ -80,7 +99,7 @@ mod resolve_mode_tests {
     #[test]
     fn text_arg_takes_priority_over_piped_stdin() {
         let got = resolve_mode(
-            &cli(Some("https://example.com"), Some("hi")),
+            &cli(Some("https://example.com"), Some("hi"), None, None),
             Some("piped".into()),
         );
 
@@ -89,6 +108,8 @@ mod resolve_mode_tests {
             Ok(Mode::Direct {
                 base: "https://example.com".into(),
                 text: "hi".into(),
+                prefix: None,
+                suffix: None,
                 stdin_ignored: true,
             })
         );
@@ -96,7 +117,7 @@ mod resolve_mode_tests {
 
     #[test]
     fn nothing_at_all_is_interactive() {
-        let got = resolve_mode(&cli(None, None), None);
+        let got = resolve_mode(&cli(None, None, None, None), None);
 
         assert_eq!(got, Ok(Mode::Interactive));
     }
@@ -104,7 +125,7 @@ mod resolve_mode_tests {
     #[test]
     fn base_plus_piped_text_is_clipboard_mode() {
         let got = resolve_mode(
-            &cli(Some("https://example.com"), None),
+            &cli(Some("https://example.com"), None, None, None),
             Some("piped".into()),
         );
 
@@ -112,20 +133,27 @@ mod resolve_mode_tests {
             got,
             Ok(Mode::FromStdin {
                 base: "https://example.com".into(),
-                text: "piped".into()
+                text: "piped".into(),
+                prefix: None,
+                suffix: None,
             })
         );
     }
 
     #[test]
     fn base_and_text_is_direct_mode() {
-        let got = resolve_mode(&cli(Some("https://example.com"), Some("human")), None);
+        let got = resolve_mode(
+            &cli(Some("https://example.com"), Some("human"), None, None),
+            None,
+        );
 
         assert_eq!(
             got,
             Ok(Mode::Direct {
                 base: "https://example.com".into(),
                 text: "human".into(),
+                prefix: None,
+                suffix: None,
                 stdin_ignored: false,
             })
         );
@@ -133,14 +161,14 @@ mod resolve_mode_tests {
 
     #[test]
     fn base_alone_with_no_pipe_is_an_error() {
-        let got = resolve_mode(&cli(Some("https://example.com"), None), None);
+        let got = resolve_mode(&cli(Some("https://example.com"), None, None, None), None);
 
         assert_eq!(got, Err(ModeError::MissingText));
     }
 
     #[test]
     fn prefix_and_suffix_flow_into_direct_mode() {
-        let mut c = cli(Some("https://example.com"), Some("human"));
+        let mut c = cli(Some("https://example.com"), Some("human"), None, None);
         c.prefix = Some("before".into());
         c.suffix = Some("after".into());
 
@@ -151,8 +179,8 @@ mod resolve_mode_tests {
             Ok(Mode::Direct {
                 base: "https://example.com".into(),
                 text: "human".into(),
-                prefix: Some("human".into()),
-                suffix: Some("human".into()),
+                prefix: Some("before".into()),
+                suffix: Some("after".into()),
                 stdin_ignored: false,
             })
         );
