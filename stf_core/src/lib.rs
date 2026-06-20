@@ -3,4 +3,4 @@ pub mod fragment;
 pub mod url;
 
 pub use fragment::TextFragment;
-pub use url::build_url;
+pub use url::{FragmentError, build_url};
