@@ -14,7 +14,12 @@ fn main() -> ExitCode {
     let stdin_text = if !io::stdin().is_terminal() {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf).ok();
-        Some(buf.trim().to_string())
+        let trimmed = buf.trim().to_string();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed)
+        }
     } else {
         None
     };
