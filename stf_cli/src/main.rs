@@ -1,7 +1,25 @@
+use std::process;
+
 use clap::Parser;
 
+use thiserror::Error;
+
 fn main() {
-    println!("Hello, world!");
+    // let cli = Cli::parse();
+
+    // if let Err(e) = run(cli) {
+    //     eprint!("error: {}", e);
+
+    //     process::exit(1);
+    // }
+}
+
+fn run(cli: &Cli) -> Result<String, RunError> {
+    // Validate
+
+    // Process
+
+    Ok(String::new())
 }
 
 /// Produce a URL that links directly to specific text in a web page.
@@ -38,8 +56,25 @@ enum Mode {
     },
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Error, PartialEq)]
 enum ModeError {
+    #[error(
+        "
+        no text to highlight\n \
+        pass it directly:  stf {{url}} \"text to highlight\"\n \
+        or pipe it in:     your clipboard-command | stf {{url}}"
+    )]
+    MissingText,
+
+    #[error(
+        "no base URL was given.\n   \
+        usage: your-clipboard-command | stf <URL>"
+    )]
+    MissingBase,
+}
+
+#[derive(Debug, PartialEq)]
+enum RunError {
     MissingText,
     MissingBase,
 }
