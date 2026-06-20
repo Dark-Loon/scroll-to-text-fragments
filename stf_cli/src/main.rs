@@ -182,6 +182,18 @@ fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError
 }
 
 #[cfg(test)]
+mod cli_tests {
+    use clap::CommandFactory;
+
+    use super::*;
+
+    #[test]
+    fn verify_cli() {
+        Cli::command().debug_assert();
+    }
+}
+
+#[cfg(test)]
 mod run_tests {
     use super::*;
 
