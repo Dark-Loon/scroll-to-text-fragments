@@ -8,6 +8,7 @@ use clap_complete::{Shell, generate};
 use clap_complete_nushell::Nushell;
 
 use inquire::{Confirm, InquireError, Text, required, validator::Validation};
+use owo_colors::OwoColorize;
 use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
 use url::Url;
@@ -57,7 +58,7 @@ fn main() -> ExitCode {
             ExitCode::SUCCESS
         }
         Err(e) => {
-            eprintln!("error: {}", e);
+            anstream::eprintln!("{} {}", "error:".red().bold(), e);
             ExitCode::FAILURE
         }
     }
@@ -85,8 +86,9 @@ fn run(mode: Mode) -> Result<String, RunError> {
             stdin_ignored,
         } => {
             if stdin_ignored {
-                eprintln!(
-                    "note: text argument and piped stdin both provided -- using the argument, stdin ignored"
+                anstream::eprintln!(
+                    "{} text argument and piped stdin both provided -- using the argument, stdin ignored",
+                    "note:".yellow().bold()
                 );
             }
             build_fragment_url(&base, text, prefix, suffix)
@@ -126,8 +128,8 @@ fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<Strin
         .prompt()?;
 
     if let Ok(preview) = build_fragment_url(&base, text.clone(), None, None) {
-        eprint!("\n preview: {}", preview);
-        eprintln!("   (you can stop here and use this, or continue to disambiguate)\n");
+        anstream::eprint!("\n {} {}", "preview:".cyan().bold(), preview);
+        anstream::eprintln!("   (you can stop here and use this, or continue to disambiguate)\n");
     }
 
     let wants_disambiguation = Confirm::new("Disambiguate repeated matches with a prefix/suffix?")
