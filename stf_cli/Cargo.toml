@@ -13,6 +13,7 @@ inquire = "0.9.4"
 url = "2.5"
 anstream = "1.0.0"
 owo-colors = "4.3.0"
+assert_cmd = "2.2.2"
 
 [[bin]]
 name = "stf"
