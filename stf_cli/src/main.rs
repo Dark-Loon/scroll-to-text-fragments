@@ -3,9 +3,10 @@ use std::{
     process::ExitCode,
 };
 
-use clap::{CommandFactory, Parser};
-
+use clap::{CommandFactory, Parser, ValueEnum};
 use clap_complete::{Shell, generate};
+use clap_complete_nushell::Nushell;
+
 use inquire::{Confirm, InquireError, Text, required, validator::Validation};
 use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
@@ -17,7 +18,19 @@ fn main() -> ExitCode {
     if let Some(shell) = cli.completions {
         let mut cmd = Cli::command();
         let bin_name = cmd.get_name().to_string();
-        generate(shell, &mut cmd, bin_name, &mut io::stdout());
+        match shell {
+            CompletionShell::Bash => generate(Shell::Bash, &mut cmd, bin_name, &mut io::stdout()),
+            CompletionShell::Elvish => {
+                generate(Shell::Elvish, &mut cmd, bin_name, &mut io::stdout())
+            }
+            CompletionShell::Nushell => generate(Nushell, &mut cmd, bin_name, &mut io::stdout()),
+            CompletionShell::PowerShell => {
+                generate(Shell::PowerShell, &mut cmd, bin_name, &mut io::stdout())
+            }
+            CompletionShell::Zsh => generate(Shell::Zsh, &mut cmd, bin_name, &mut io::stdout()),
+            CompletionShell::Fish => generate(Shell::Fish, &mut cmd, bin_name, &mut io::stdout()),
+        }
+
         return ExitCode::SUCCESS;
     }
 
@@ -187,7 +200,20 @@ struct Cli {
         exclusive = true,
         help_heading = "Shell Completions"
     )]
-    completions: Option<Shell>,
+    completions: Option<CompletionShell>,
+}
+
+/// The shells we can generate completions for. A thin wrapper around
+/// clap_complete::Shell plus Nushell, since the two crates' generator types
+/// can't share a single enum directly
+#[derive(Copy, Clone, Debug, ValueEnum)]
+enum CompletionShell {
+    Bash,
+    Elvish,
+    Fish,
+    Nushell,
+    PowerShell,
+    Zsh,
 }
 
 #[derive(Debug, PartialEq)]
