@@ -3,6 +3,13 @@ use url::Url;
 
 use crate::fragment::TextFragment;
 
+/// Build a complete text fragment URL from a base URL and a [`TextFragment`].
+///
+/// # Errors
+///
+/// Returns [`FragmentError::EmptyTextStart`] if `fragment.start` is empty or whitespace-only.
+///
+/// Returns [`FragmentError::InvalidBaseUrl`] if `base` cannot be parsed as a valid URL.
 pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, FragmentError> {
     if fragment.start.trim().is_empty() {
         return Err(FragmentError::EmptyTextStart);
