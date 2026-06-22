@@ -22,10 +22,10 @@ impl TextFragment {
         suffix: Option<String>,
     ) -> TextFragment {
         TextFragment {
-            start,
-            end,
-            prefix,
-            suffix,
+            start: normalize_whitespace(&start),
+            end: end.as_deref().map(normalize_whitespace),
+            prefix: prefix.as_deref().map(normalize_whitespace),
+            suffix: suffix.as_deref().map(normalize_whitespace),
         }
     }
 
@@ -64,9 +64,29 @@ impl TextFragment {
     }
 }
 
+fn normalize_whitespace(s: &str) -> String {
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn normalizes_newlines_and_tabs_to_spaces() {
+        let f = TextFragment::new(
+            "first line\nsecond line".into(), None, None, None);
+
+        assert_eq!(f.start, "first line second line");
+    }
+
+    #[test]
+    fn normalizes_windows_line_endings() {
+        let f = TextFragment::new(
+            "first line\r\nsecond line".into(), None, None, None);
+
+        assert_eq!(f.start, "first line second line");
+    }
 
     #[test]
     fn should_return_directive() {
