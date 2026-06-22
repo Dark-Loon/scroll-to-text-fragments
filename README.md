@@ -1,7 +1,7 @@
 <!-- [![Crates.io](https://img.shields.io/crates/v/stf_cli.svg)](https://crates.io/crates/stf_cli) -->
 <!-- [![License](https://img.shields.io/crates/l/stf_cli.svg)](#license) -->
 
-# stf
+# Scroll to Text Fragments (stf)
 
 Produce a URL that links directly to specific text in a web page. When opened, the browser highlights the text and scrolls it into view.
 
@@ -135,17 +135,16 @@ stf --completions nushell o> ~/.cache/stf/completions.nu
 
 </details>
 
-## Notes and limitations
 
-- If the text fragment doesn't match anything in the linked document, or the browser doesn't support text fragments, the fragment is silently ignored and the page just loads at the top.
-- If a fragment doesn't seem to highlight even though the syntax looks right, you may be matching a different occurrence than the one you expected — it might be highlighted, just offscreen.
-- All major browsers added support by late 2024. Older devices (iOS 15 or earlier, very old Chrome/Firefox) open the link fine but silently ignore the fragment.
-- Some sites opt out via the `Document-Policy: force-load-at-top` header — GitHub is one example.
+## Notes
+
+- If a browser doesn't support text fragments, or nothing matches, the fragment is silently ignored and the page just loads at the top.
+- Some sites opt out via `Document-Policy: force-load-at-top` (GitHub is one).
 
 
-## Roadmap
+## Future development plan
 
-Multi-sentence range matching (`textStart,textEnd`) is already supported internally by `stf_core`, just not yet exposed as a CLI flag. This is what makes long passages reliable instead of being treated as one giant block — next up.
+Multi-sentence range matching (`textStart,textEnd`)
 
 
 ## License
