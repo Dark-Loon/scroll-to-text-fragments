@@ -1,22 +1,19 @@
-<!-- [![Crates.io](https://img.shields.io/crates/v/stf_cli.svg)](https://crates.io/crates/stf_cli) -->
-<!-- [![License](https://img.shields.io/crates/l/stf_cli.svg)](#license) -->
-
 # Scroll to Text Fragments (stf)
 
 Produce a URL that links directly to specific text in a web page. When opened, the browser highlights the text and scrolls it into view.
 
+<!-- [![Crates.io](https://img.shields.io/crates/v/stf-cli.svg)](https://crates.io/crates/stf-cli) -->
+<!-- [![License](https://img.shields.io/crates/l/stf-cli.svg)](#license) -->
+<!-- [<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-stf-cli-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/stf-cli) -->
+
+
 ## Demo
 
-<!-- TODO: embed demo GIF here showing all three modes -->
-<!-- [![Crates.io](https://img.shields.io/crates/v/stf_cli.svg)](https://crates.io/crates/stf_cli) -->
+<!-- TODO: Termux share GIF once set up -->
+![Animated GIF making a demonstration of stf's three modes: direct, interactive, and clipboard](./assets/demo.gif)
 
-## Features
+> You can replay this in your terminal: `asciinema play ./assets/demo.cast`
 
-- Three ways to use it: pass text directly, pipe it in, or answer an interactive prompt
-- Works with any script, including right-to-left text
-- `--prefix`/`--suffix` to disambiguate text that appears more than once on a page
-- Shell completions for bash, zsh, fish, PowerShell, and Nushell
-- Linux, macOS, Windows, and Android (via Termux)
 
 ## Install
 
@@ -24,50 +21,27 @@ Produce a URL that links directly to specific text in a web page. When opened, t
 cargo install stf-cli
 ```
 
-> Requires the Rust toolchain. On Termux, install it first with `pkg install rust` — the first build will take a few minutes to compile on-device.
+On Termux (Android):
+
 ```bash
 pkg install rust
 cargo install stf-cli
 ```
 
-To install the latest unreleased version straight from source instead:
+The first build will take a few minutes to compile on-device.
 
-```bash
-cargo install --git https://github.com/you/text-fragment-url --locked -p stf-cli
-```
 
-## Usage
+## Mobile (Android + Termux)
 
-### Direct mode
+**Basic clipboard mode**:
 
-```bash
-stf https://example.com "short simple text"
-```
+1. Long-press text in browser → **Copy**
+2. In Termux: `termux-clipboard-get | stf https://the-page-url.com`
+3. Done
 
-### Clipboard / pipe mode
+**Recommended: one-time setup**:
 
-Pipe text in from anywhere — a clipboard tool, a file, another command.
-
-```bash
-termux-clipboard-get | stf https://example.com   # Termux
-wl-paste | stf https://example.com               # Wayland
-xclip -selection clipboard -o | stf https://example.com   # X11
-```
-
-### Interactive mode
-
-Run with no arguments for a guided prompt, with a live preview as you go.
-
-```bash
-stf
-```
-
-<details>
-<summary>Quick links on Android, with one setup step</summary>
-
-<br>
-
-Out of the box, clipboard mode still needs you to type the URL yourself. To skip that, set up Termux's share-target script so the page URL is handed to `stf` automatically:
+Requires the [Termux:API](https://wiki.termux.com/wiki/Termux:API) app.
 
 ```bash
 mkdir -p ~/bin
@@ -79,24 +53,47 @@ EOF
 chmod +x ~/bin/termux-url-opener
 ```
 
-Then, day to day: select text on a page → **Copy** → tap **Share** → choose **Termux**. The link is generated and copied to your clipboard automatically, ready to paste. Requires the [Termux:API](https://wiki.termux.com/wiki/Termux:API) app.
+Then:
 
-</details>
+1. Long-press text in browser → **Copy**
+2. Tap **Share** → **Termux**
+3. Done
+
+
+## Direct
+
+```bash
+stf https://example.com "short simple text"
+```
+
+For text with quotes or spanning multiple paragraphs, use interactive mode.
+
+
+## Interactive
+
+```bash
+stf
+```
+
+Guided prompt with a live preview. Press Enter through each step.
+
+## Clipboard / pipe
+
+```bash
+wl-paste | stf https://example.com               # Wayland
+xclip -selection clipboard -o | stf https://example.com   # X11
+termux-clipboard-get | stf https://example.com   # Termux
+```
+
 
 ## Disambiguating repeated text
 
-If your text appears more than once on the page, anchor the match with `--prefix`/`-p` and `--suffix`/`-s`:
+If the same text appears more than once on a page:
 
 ```bash
 stf https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a "The Referer" --prefix "downgrade:" --suffix "to origins"
 ```
 
-## Non-English and right-to-left scripts
-
-```bash
-stf https://example.com "مِصر" --prefix "البحرين"
-# -> https://example.com/#:~:text=%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-,%D9%85%D9%90%D8%B5%D8%B1
-```
 
 ## Flags
 
@@ -111,26 +108,26 @@ stf https://example.com "مِصر" --prefix "البحرين"
 <details>
 <summary>Shell completions setup</summary>
 
-<br>
+<!-- <br> -->
 
 ```bash
 # bash
 stf --completions bash > ~/.local/share/bash-completion/completions/stf
 
-# zsh (needs a directory on $fpath; ~/.zfunc is a common choice)
+# zsh
 mkdir -p ~/.zfunc && stf --completions zsh > ~/.zfunc/_stf
-# then add to ~/.zshrc, before compinit: fpath+=~/.zfunc
+# Add to ~/.zshrc before compinit: fpath+=~/.zfunc
 
-# fish (auto-loaded, no shell config needed)
+# fish
 stf --completions fish > ~/.config/fish/completions/stf.fish
 
 # powershell
 stf --completions power-shell
 
-# nushell -- note: o>, not >, since nushell's redirection syntax differs from POSIX shells
+# nushell
 mkdir ~/.cache/stf
 stf --completions nushell o> ~/.cache/stf/completions.nu
-# then in config.nu: source ~/.cache/stf/completions.nu
+# Add to config.nu: source ~/.cache/stf/completions.nu
 ```
 
 </details>
@@ -138,49 +135,24 @@ stf --completions nushell o> ~/.cache/stf/completions.nu
 
 ## Notes
 
-- If a browser doesn't support text fragments, or nothing matches, the fragment is silently ignored and the page just loads at the top.
+- Works with any writing system, including right-to-left text (Arabic, Hebrew, etc.)
+- If the browser doesn't support text fragments, or nothing matches, the link just loads the page normally.
 - Some sites opt out via `Document-Policy: force-load-at-top` (GitHub is one).
 
+## Roadmap
 
-## Future development plan
-
-Multi-sentence range matching (`textStart,textEnd`)
-
+- Better handling of long passages with a start/end range
+- Fetch the page and verify the fragment actually matches before returning the URL
 
 ## License
 
-Licensed under either of
-
- * Apache License, Version 2.0
-   ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
- * MIT license
-   ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
-
-at your option.
-
-
-## Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-dual licensed as above, without any additional terms or conditions.
-
+<sup>
+Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="LICENSE-MIT">MIT license</a> at your option.
+</sup>
 
 ## Acknowledgements
 
-Text Fragments was implemented and specified by [Nick Burris](https://github.com/nickburris) and [David Bokan](https://github.com/bokand), with contributions from [Grant Wang](https://github.com/grantjwang).
+Text Fragments was specified and implemented by [Nick Burris](https://github.com/nickburris) and [David Bokan](https://github.com/bokand), with contributions from [Grant Wang](https://github.com/grantjwang).
 
 Built with assistance from [Claude](https://claude.ai).
-
-
-
-
-
-
-
-
-
-
-
-
-
