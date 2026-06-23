@@ -12,12 +12,3 @@ categories = [ "encoding", "web-programming" ]
 urlencoding = "2"
 thiserror.workspace = true
 url.workspace = true
-
-[profile.dev]
-workspace = true
-
-[profile.dev.package."*"]
-workspace = true
-
-[profile.debugging]
-workspace = true

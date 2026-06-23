@@ -28,12 +28,3 @@ wait-timeout = "0.2.1"
 [[bin]]
 name = "stf"
 path = "src/main.rs"
-
-[profile.dev]
-workspace = true
-
-[profile.dev.package."*"]
-workspace = true
-
-[profile.debugging]
-workspace = true
