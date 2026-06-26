@@ -9,7 +9,7 @@ use clap_complete_nushell::Nushell;
 
 use inquire::{Confirm, InquireError, Text, required, validator::Validation};
 use owo_colors::OwoColorize;
-use stf_core::{FragmentError, TextFragment, build_url};
+use stf_core::{FragmentError, TextFragment, build_url, extract_range};
 use thiserror::Error;
 use url::Url;
 
@@ -109,7 +109,8 @@ fn build_fragment_url(
     suffix: Option<String>,
     verbose: bool,
 ) -> Result<String, RunError> {
-    let fragment = TextFragment::new(text, None, prefix, suffix);
+    let (start, end) = extract_range(&text);
+    let fragment = TextFragment::new(start, end, prefix, suffix);
     if verbose {
         anstream::eprintln!("{} {:?}", "fragment:".cyan().dimmed(), fragment);
     }
@@ -140,8 +141,8 @@ fn prompt_for_fragment(
         .prompt()?;
 
     if let Ok(preview) = build_fragment_url(&base, text.clone(), None, None, verbose) {
-        anstream::eprint!("\n {}\n{}", "preview:".cyan().bold(), preview);
-        anstream::eprintln!("   (you can stop here and use this, or continue to disambiguate)\n");
+        anstream::eprint!("\n{}:\n{}", "preview".cyan().bold(), preview);
+        anstream::eprintln!("\n   (you can stop here and use this, or continue to disambiguate)\n");
     }
 
     let wants_disambiguation = Confirm::new("Disambiguate repeated matches with a prefix/suffix?")

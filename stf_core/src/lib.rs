@@ -6,7 +6,9 @@
 
 pub(crate) mod encode;
 pub mod fragment;
+pub mod range;
 pub mod url;
 
 pub use fragment::TextFragment;
+pub use range::extract_range;
 pub use url::{FragmentError, build_url};
