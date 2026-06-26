@@ -1,23 +1,44 @@
-use unicode_segmentation::UnicodeSegmentation;
 const THRESHOLD: usize = 150;
+const ANCHOR_WORDS: usize = 4;
 
 pub fn extract_range(text: &str) -> (String, Option<String>) {
     if text.len() <= THRESHOLD {
         return (text.to_string(), None);
     }
 
-    let words: Vec<&str> = text.unicode_words().collect();
-
-    match words.len() {
-        0 => (text.to_string(), None),
-        1 => (text.to_string(), None),
-        2 => (words[0].to_string(), Some(words[1].to_string())),
-        _ => {
-            let start = words[..4].join(" ");
-            let end = words[words.len() - 4..].join(" ");
-            (start, Some(end))
-        }
+    match (
+        first_n_words(text, ANCHOR_WORDS),
+        last_n_words(text, ANCHOR_WORDS),
+    ) {
+        (Some(s), Some(e)) if s != e => (s, Some(e)),
+        (Some(s), _) => (s, None),
+        _ => (text.to_string(), None),
     }
+}
+
+fn first_n_words(text: &str, n: usize) -> Option<String> {
+    let end = text.split_whitespace().take(n).last().map(|w| {
+        let offset = w.as_ptr() as usize - text.as_ptr() as usize;
+        offset + w.len()
+    })?;
+
+    Some(text[..end].to_string())
+}
+
+fn last_n_words(text: &str, n: usize) -> Option<String> {
+    let words: Vec<&str> = text.split_whitespace().collect();
+
+    if words.len() < 2 {
+        return None;
+    }
+
+    let start = words
+        .len()
+        .checked_sub(n)
+        .and_then(|i| words.get(i))
+        .map(|w| w.as_ptr() as usize - text.as_ptr() as usize)?;
+
+    Some(text[start..].trim_end().to_string())
 }
 
 #[cfg(test)]
@@ -77,7 +98,8 @@ mod test {
 
     #[test]
     fn em_dash_preserved_in_anchor() {
-        let text = "Family resemblance also serves to exhibit \
+        let text = "Our analysis does not, support the prevalence of either type of high god among ancestral hunter-gatherers, \
+                    Family resemblance also serves to exhibit \
                     the lack of boundaries—and the distance from exactness—";
         let (_, end) = extract_range(text);
         assert!(end.unwrap().contains("—"));
@@ -85,7 +107,8 @@ mod test {
 
     #[test]
     fn curly_quotes_preserved() {
-        let text = "Family resemblance also serves to exhibit \
+        let text = "Our analysis does not, support the prevalence of either type of high god among ancestral hunter-gatherers, \
+                    Family resemblance also serves to exhibit \
                     the lack of boundaries—and the distance from \"exactness\"—";
         let (_, end) = extract_range(text);
         assert!(end.unwrap().contains("\""));

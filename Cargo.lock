@@ -763,7 +763,6 @@ name = "stf-core"
 version = "0.1.0"
 dependencies = [
  "thiserror",
- "unicode-segmentation",
  "url",
  "urlencoding",
 ]

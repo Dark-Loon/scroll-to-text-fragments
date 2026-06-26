@@ -10,6 +10,5 @@ categories = [ "encoding", "web-programming" ]
 
 [dependencies]
 urlencoding = "2"
-unicode-segmentation = "1.13.3"
 thiserror.workspace = true
 url.workspace = true
