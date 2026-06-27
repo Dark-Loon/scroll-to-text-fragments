@@ -124,7 +124,7 @@ stf https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a "The 
 |---|---|
 | `-p`, `--prefix` | Text immediately before the match, to disambiguate repeated occurrences |
 | `-s`, `--suffix` | Text immediately after the match, to disambiguate repeated occurrences |
-| `-v`, `--verbose` | Print details about how the URL was constructed |
+| `-v`, `--verbose` | Print details about how the URL was constructed (`-vv` for more) |
 | `--completions <SHELL>` | Generate a shell completion script and print it to stdout |
 | `-h`, `--help` | Print usage |
 

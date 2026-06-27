@@ -50,13 +50,22 @@ fn warns_on_stderr_when_text_arg_and_piped_stdin_both_given() {
 }
 
 #[test]
-fn verbose_prints_mode_and_fragment_to_stderr() {
+fn verbose_prints_mode_to_stderr() {
     Command::cargo_bin("stf")
         .unwrap()
         .args(["--verbose", "https://example.com", "iceberg"])
         .assert()
         .success()
-        .stderr(predicate::str::contains("mode:"))
+        .stderr(predicate::str::contains("mode:"));
+}
+
+#[test]
+fn level_two_verbose_prints_fragment_to_stderr() {
+    Command::cargo_bin("stf")
+        .unwrap()
+        .args(["-vv", "https://example.com", "iceberg"])
+        .assert()
+        .success()
         .stderr(predicate::str::contains("fragment:"));
 }
 

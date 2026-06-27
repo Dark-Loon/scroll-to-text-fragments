@@ -66,8 +66,8 @@ fn main() -> ExitCode {
     }
 }
 
-fn run(mode: Mode, verbose: bool) -> Result<String, RunError> {
-    if verbose {
+fn run(mode: Mode, verbose: u8) -> Result<String, RunError> {
+    if verbose >= 1 {
         anstream::eprintln!("{} {:?}", "mode:".cyan().dimmed(), mode);
     }
 
@@ -107,11 +107,11 @@ fn build_fragment_url(
     text: String,
     prefix: Option<String>,
     suffix: Option<String>,
-    verbose: bool,
+    verbose: u8,
 ) -> Result<String, RunError> {
     let (start, end) = extract_range(&text);
     let fragment = TextFragment::new(start, end, prefix, suffix);
-    if verbose {
+    if verbose >= 2 {
         anstream::eprintln!("{} {:?}", "fragment:".cyan().dimmed(), fragment);
     }
     let url = build_url(base, &fragment)?;
@@ -119,7 +119,7 @@ fn build_fragment_url(
 }
 
 fn prompt_for_fragment(
-    verbose: bool,
+    verbose: u8,
 ) -> Result<(String, String, Option<String>, Option<String>), InquireError> {
     let base = Text::new("What is the base URL?")
         .with_validator(required!("This field is required"))
@@ -204,8 +204,8 @@ struct Cli {
     suffix: Option<String>,
 
     /// Print details about how the URL was constructed
-    #[arg(short, long)]
-    verbose: bool,
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
 
     /// Generate a shell completion script and print it to stdout
     #[arg(
@@ -343,7 +343,7 @@ mod run_tests {
         // which doesn't implement it), so we unwrap and compare the String
         // payload directly rather than comparing the whole Result.
         assert_eq!(
-            run(mode, false).unwrap(),
+            run(mode, 0).unwrap(),
             "https://example.com/#:~:text=iceberg"
         );
     }
@@ -364,7 +364,7 @@ mod resolve_mode_tests {
             text: text.map(String::from),
             prefix: prefix.map(String::from),
             suffix: suffix.map(String::from),
-            verbose: false,
+            verbose: 0,
             completions: None,
         }
     }
